@@ -38,8 +38,10 @@
 #pragma once
 #if defined(UAVCAN_KINETIS_NUTTX)
 #  include <uavcan_kinetis/uavcan_kinetis.hpp>
+namespace uavcan_architecture_ns = uavcan_kinetis;
 #elif defined(UAVCAN_STM32_NUTTX)
 #  include <uavcan_stm32/uavcan_stm32.hpp>
+namespace uavcan_architecture_ns = uavcan_stm32;
 #else
 #  error "Unsupported driver"
 #endif

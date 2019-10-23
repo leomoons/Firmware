@@ -121,6 +121,7 @@ px4_add_module(
 		px4_uavcan_dsdlc
 
 		mixer
+		mixer_module
 		version
 
 		git_uavcan
