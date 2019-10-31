@@ -3,6 +3,7 @@
 # PX4 commands need the 'px4-' prefix in bash.
 # (px4-alias.sh is expected to be in the PATH)
 # shellcheck disable=SC1091
+# 对于px4_sitl_default来说，该文件位于build/px4_sitl_default/bin目录下
 . px4-alias.sh
 
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"

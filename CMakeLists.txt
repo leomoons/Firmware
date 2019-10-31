@@ -103,7 +103,7 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 set(PX4_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(PX4_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-
+# 将Firmware/cmake目录添加到该变量中，使其中的.cmake module可以被使用
 list(APPEND CMAKE_MODULE_PATH ${PX4_SOURCE_DIR}/cmake)
 include(px4_parse_function_args)
 
@@ -135,15 +135,18 @@ define_property(GLOBAL PROPERTY PX4_MODULE_PATHS
 #
 
 set(CONFIG "px4_sitl_default" CACHE STRING "desired configuration")
-
+#function(px4_add_module) 会被Firmware/src目录下的各个module目录里的CMakeLists.txt调用，用于子模块的CMake文件格式化编写
 include(px4_add_module)
 set(config_module_list)
 set(config_df_driver_list)
-
+#用于找到/boards/px4/sitl中的.cmake文件，并将该文件路径赋给PX4_CONFIG_FILE变量
 include(px4_config)
+#function(px4_add_board)被Firmware/boards/px4/sitl中的*.cmake文件调用，用于确认该targe的编译需要哪些module参与，也就是src下的那些模块。
 include(px4_add_board)
 include(${PX4_CONFIG_FILE})
+#/home/l/Firmware/boards/px4/sitl/default.cmake
 message(STATUS "PX4 config: ${PX4_CONFIG}")
+#posix
 message(STATUS "PX4 platform: ${PX4_PLATFORM}")
 
 if (ENABLE_LOCKSTEP_SCHEDULER)
@@ -234,7 +237,7 @@ if (${PX4_PLATFORM} STREQUAL "posix")
 	# inside the px4 executable.
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 	set(CMAKE_ENABLE_EXPORTS ON)
-
+	# 用于确认posix环境下target安装的路径
 	include(coverage)
 	include(sanitizers)
 
@@ -399,7 +402,7 @@ add_subdirectory(src/drivers/boards EXCLUDE_FROM_ALL)
 if(EXISTS "${PX4_BOARD_DIR}/CMakeLists.txt")
 	add_subdirectory(${PX4_BOARD_DIR})
 endif()
-
+#将config_module_list中的每一个module目录使用add_subdirectory进行识别包含
 foreach(module ${config_module_list})
 	add_subdirectory(src/${module})
 endforeach()

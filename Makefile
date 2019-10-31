@@ -35,7 +35,7 @@
 #
 # We depend on our submodules, so we have to prevent attempts to
 # compile without it being present.
-ifeq ($(wildcard .git),)
+ifeq ($(wildcard .git),) #用于确保工作目录下有git repository存在
     $(error YOU HAVE TO USE GIT TO DOWNLOAD THIS REPOSITORY. ABORTING.)
 endif
 
@@ -67,7 +67,10 @@ space := $(subst ,, )
 # assume 1st argument passed is the main target, the
 # rest are arguments to pass to the makefile generated
 # by cmake in the subdirectory
+# example: make px4_sitl_default gazebo
+# px4_sitl_default
 FIRST_ARG := $(firstword $(MAKECMDGOALS))
+#获得make后的参数的第二个开始后的所有参数，在这里为gazebo
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 j ?= 4
 
@@ -100,7 +103,7 @@ else
 	PX4_MAKE = $(MAKE)
 	PX4_MAKE_ARGS = -j$(j) --no-print-directory
 endif
-
+#Firmware目录
 SRC_DIR := $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))")
 
 # check if replay env variable is set & set build dir accordingly
@@ -119,7 +122,7 @@ ifdef PX4_CMAKE_BUILD_TYPE
 	CMAKE_ARGS += -DCMAKE_BUILD_TYPE=${PX4_CMAKE_BUILD_TYPE}
 else
 
-	# Address Sanitizer
+	# Address Sanitizer  	这部分的变量定义会影响到后续的CMakeLists.txt的执行
 	ifdef PX4_ASAN
 		CMAKE_ARGS += -DCMAKE_BUILD_TYPE=AddressSanitizer
 	endif
@@ -151,6 +154,7 @@ define cmake-build
 	@# make sure to start from scratch when switching from GNU Make to Ninja
 	@if [ $(PX4_CMAKE_GENERATOR) = "Ninja" ] && [ -e $(BUILD_DIR)/Makefile ]; then rm -rf $(BUILD_DIR); fi
 	@# only excplicitly configure the first build, if cache file already exists the makefile will rerun cmake automatically if necessary
+	@# 在build/px4_sitl_default目录中调用Firmware目录下的CMakeLists.txt，这里使用ninja编译工具
 	@if [ ! -e $(BUILD_DIR)/CMakeCache.txt ] || [ $(CMAKE_CACHE_CHECK) ]; then \
 		mkdir -p $(BUILD_DIR) \
 		&& cd $(BUILD_DIR) \
@@ -158,6 +162,7 @@ define cmake-build
 		|| (rm -rf $(BUILD_DIR)); \
 	fi
 	@# run the build for the specified target
+	@# 这里应该是使用ninja来完成build/px4_sitl_default下的编译，这里ARGS变量等于gazebo，可以在/build/px4_sitl_default/build.build中找到相应的编译方法
 	@cmake --build $(BUILD_DIR) -- $(PX4_MAKE_ARGS) $(ARGS)
 endef
 
@@ -182,6 +187,8 @@ define colorecho
 endef
 
 # Get a list of all config targets boards/*/*.cmake
+# 语法讲解：在shell(我这里是bash)中使用find在boards目录下第三层子目录寻找条件为(文件名后缀为.cmake，不存在common和sdflight)并将该文件的绝对路径（exp:boards/px4/sitl/default.cmake）打印出来，
+# 将打印出来的结果通过管道传递给sed进行文本处理，首先将/boards删掉，将文件后缀.cmake删掉，将'/'替换成'_'（exp:px4_sitl+default），这样就生成了所有可以type补全的target。
 ALL_CONFIG_TARGETS := $(shell find boards -maxdepth 3 -mindepth 3 ! -name '*common*' ! -name '*sdflight*' -name '*.cmake' -print | sed -e 's/boards\///' | sed -e 's/\.cmake//' | sed -e 's/\//_/g' | sort)
 
 # ADD CONFIGS HERE
@@ -195,6 +202,7 @@ $(ALL_CONFIG_TARGETS):
 	@$(call cmake-build,$(PX4_CONFIG)$(BUILD_DIR_SUFFIX))
 
 # Filter for only default targets to allow omiting the "_default" postfix
+# 用于识别target缺少'_default'的情况
 CONFIG_TARGETS_DEFAULT := $(patsubst %_default,%,$(filter %_default,$(ALL_CONFIG_TARGETS)))
 $(CONFIG_TARGETS_DEFAULT):
 	@$(eval PX4_CONFIG = $@_default)
