@@ -112,6 +112,7 @@ include(px4_parse_function_args)
 #
 include(px4_git)
 
+# 用于显示当前固件的git版本
 execute_process(
 	COMMAND git describe --always --tags
 	OUTPUT_VARIABLE PX4_GIT_TAG
@@ -393,8 +394,9 @@ add_library(parameters_interface INTERFACE)
 
 include(px4_add_library)
 add_subdirectory(src/lib EXCLUDE_FROM_ALL)
-
+# 用于知道chip信息
 add_subdirectory(platforms/${PX4_PLATFORM}/src/px4)
+# EXCLUDE_FROM_ALL用于排除发行版不想包含进去的源代码，在只使用cmake命令时不会包含进去。
 add_subdirectory(platforms EXCLUDE_FROM_ALL)
 add_subdirectory(src/modules/uORB EXCLUDE_FROM_ALL) # TODO: platform layer
 add_subdirectory(src/drivers/boards EXCLUDE_FROM_ALL)

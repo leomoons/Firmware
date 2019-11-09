@@ -273,7 +273,7 @@ function(px4_add_board)
 	# add board config directory src to build modules
 	file(RELATIVE_PATH board_support_src_rel ${PX4_SOURCE_DIR}/src ${PX4_BOARD_DIR})
 	list(APPEND config_module_list ${board_support_src_rel}/src)
-
+	#使这个变量在父CmakeLists.txt中可见
 	set(config_module_list ${config_module_list} PARENT_SCOPE)
 
 endfunction()

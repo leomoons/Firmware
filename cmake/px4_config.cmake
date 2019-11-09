@@ -34,7 +34,7 @@
 # find PX4 config
 #  look for in tree board config that matches CONFIG input
 if(NOT PX4_CONFIG_FILE)
-
+	# 在boards下寻找后缀为.cmake的文件并将文件名全部赋给board_configs变量，这个文件名还包含路径
 	file(GLOB_RECURSE board_configs
 		RELATIVE "${PX4_SOURCE_DIR}/boards"
 		"boards/*.cmake"
@@ -48,7 +48,7 @@ if(NOT PX4_CONFIG_FILE)
 		string(REPLACE ".cmake" "" filename_stripped ${filename})
 		string(REPLACE "/" ";" config ${filename_stripped})
 		list(LENGTH config config_len)
-
+		#讲类似于px4/sitl/default.cmake的文件名转换成px4;sitl;default
 		if(${config_len} EQUAL 3)
 			list(GET config 0 vendor)
 			list(GET config 1 model)

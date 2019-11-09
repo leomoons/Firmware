@@ -162,7 +162,7 @@ define cmake-build
 		|| (rm -rf $(BUILD_DIR)); \
 	fi
 	@# run the build for the specified target
-	@# 这里应该是使用ninja来完成build/px4_sitl_default下的编译，这里ARGS变量等于gazebo，可以在/build/px4_sitl_default/build.build中找到相应的编译方法
+	@# 这里应该是使用ninja来完成build/px4_sitl_default下的编译，这里ARGS变量等于gazebo，可以在/build/px4_sitl_default/build.ninja中找到相应的编译方法
 	@cmake --build $(BUILD_DIR) -- $(PX4_MAKE_ARGS) $(ARGS)
 endef
 
@@ -195,10 +195,11 @@ ALL_CONFIG_TARGETS := $(shell find boards -maxdepth 3 -mindepth 3 ! -name '*comm
 # --------------------------------------------------------------------
 #  Do not put any spaces between function arguments.
 
-# All targets.
+# All targets.TODO: CMAKE_ARGS
 $(ALL_CONFIG_TARGETS):
 	@$(eval PX4_CONFIG = $@)
 	@$(eval CMAKE_ARGS += -DCONFIG=$(PX4_CONFIG))
+	@echo "CMAKE_ARGS: $(CMAKE_ARGS)"
 	@$(call cmake-build,$(PX4_CONFIG)$(BUILD_DIR_SUFFIX))
 
 # Filter for only default targets to allow omiting the "_default" postfix
@@ -493,3 +494,16 @@ help:
 # Print a list of all config targets.
 list_config_targets:
 	@for targ in $(patsubst %_default,%[_default],$(ALL_CONFIG_TARGETS)); do echo $$targ; done
+
+.PHONY: print_variabel
+print_variabel:
+	@echo "MAKEFILE_LIST: $(MAKEFILE_LIST)"
+	@echo "MAKECMDGOALS: $(MAKECMDGOALS)"
+	@echo "$@"
+	@echo "PX4_CONFIG: $(PX4_CONFIG)"
+	@echo "SRC_DIR: $(SRC_DIR)"
+	@echo "PX4_MAKE: $(PX4_MAKE)"
+	@echo "PX4_CMAKE_GENERATOR: $(PX4_CMAKE_GENERATOR)"
+	@echo "SYSTEMROOT: $(SYSTEMROOT)"
+	@echo "PX4_MAKE_ARGS: $(PX4_MAKE_ARGS)"
+	@echo "ALL_CONFIG_TARGETS: $(ALL_CONFIG_TARGETS)"
